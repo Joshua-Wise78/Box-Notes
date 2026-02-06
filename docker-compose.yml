@@ -1,10 +1,9 @@
 version: '3.8'
 
-services:
-  # Database
+services:  # <--- This line is mandatory!
+  # 1. Database
   db:
-    image: pgvector/pgvector:pg16
-    container_name: obsidian_db
+    image: postgres:15-alpine
     restart: always
     environment:
       POSTGRES_USER: box-user
@@ -15,29 +14,31 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Backend
+  # 2. Backend
+  backend:
     build: ./backend
     container_name: box-backend
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
-      - ./backend:/app                
-      - ./vaults:/data/vaults         
+      - ./backend:/app
+      - ./vaults:/data/vaults
     ports:
       - "8000:8000"
     depends_on:
       - db
     environment:
       DATABASE_URL: postgresql://box-user:password@db:5432/box-db
-      VAULT_ROOT: /data/vaults        
+      VAULT_ROOT: /data/vaults
 
-  # Frontend:
+  # 3. Frontend
+  frontend:
     build: ./frontend
     container_name: box-frontend
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app               
-      - /app/node_modules             
+      - ./frontend:/app
+      - /app/node_modules
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
     depends_on:
