@@ -1,7 +1,6 @@
 version: '3.8'
 
-services:  # <--- This line is mandatory!
-  # 1. Database
+services:
   db:
     image: postgres:15-alpine
     restart: always
@@ -14,7 +13,6 @@ services:  # <--- This line is mandatory!
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # 2. Backend
   backend:
     build: ./backend
     container_name: box-backend
@@ -30,7 +28,6 @@ services:  # <--- This line is mandatory!
       DATABASE_URL: postgresql://box-user:password@db:5432/box-db
       VAULT_ROOT: /data/vaults
 
-  # 3. Frontend
   frontend:
     build: ./frontend
     container_name: box-frontend
@@ -40,7 +37,7 @@ services:  # <--- This line is mandatory!
       - ./frontend:/app
       - /app/node_modules
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
       - backend
 
