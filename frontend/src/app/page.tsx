@@ -4,7 +4,6 @@ import Sidebar from '@/components/Sidebar';
 import FileTree from '@/components/FileTree';
 import EditorPane from '@/components/EditorPane';
 
-// Interface matching your backend schemas.py
 export interface Note {
   id: string;
   title: string;
@@ -17,25 +16,38 @@ export interface Note {
 }
 
 export default function Home() {
-  // Fix: Explicitly type the state as Note[]
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch using the /api rewrite
     fetch('/api/notes/')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`API Error: ${res.status}`);
+        return res.json();
+      })
       .then((data: Note[]) => {
         if (Array.isArray(data)) {
           setNotes(data);
+          setError(null);
         }
       })
-      .catch((err) => console.error("API Connection Error:", err));
+      .catch((err) => {
+        console.error("API Connection Error:", err);
+        setError("Could not connect to backend.");
+      });
   }, []);
 
   const handleSelectNote = async (id: string) => {
+    // Optimistic find from existing list first
+    const existing = notes.find(n => n.id === id);
+    if (existing && existing.content) {
+      setSelectedNote(existing);
+    }
+
     try {
       const res = await fetch(`/api/notes/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch note content");
       const data: Note = await res.json();
       setSelectedNote(data);
     } catch (err) {
@@ -44,15 +56,26 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-[#121212] text-white overflow-hidden">
+    <div className="flex h-screen bg-[#121212] text-white overflow-hidden font-sans">
       <Sidebar />
       <FileTree notes={notes} onSelect={handleSelectNote} activeId={selectedNote?.id} />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {selectedNote ? (
+
+      <main className="flex-1 flex flex-col overflow-hidden bg-[#1e1e1e]">
+        {error ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-red-400 gap-2">
+            <span className="font-bold">Connection Error</span>
+            <span className="text-sm text-zinc-500">Ensure the backend container is running.</span>
+          </div>
+        ) : selectedNote ? (
           <EditorPane note={selectedNote} />
         ) : (
-          <div className="flex-1 flex items-center justify-center text-zinc-500 italic">
-            Select a note to begin editing
+          <div className="flex-1 flex flex-col items-center justify-center text-zinc-600 gap-4">
+            <div className="w-16 h-16 rounded-xl bg-zinc-800 flex items-center justify-center">
+              <svg className="w-8 h-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium">Select a note from the sidebar to edit</p>
           </div>
         )}
       </main>
