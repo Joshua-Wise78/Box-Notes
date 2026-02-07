@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+import MarkdownView from '@/components/MarkdownView'; // Import your stable viewer
 
 interface EditorProps {
   initialContent?: string;
@@ -20,6 +20,7 @@ export default function MarkdownEditor({ initialContent = "" }: EditorProps) {
           className="flex-1 bg-transparent p-6 text-zinc-300 font-mono text-sm resize-none focus:outline-none leading-relaxed"
           value={markdown}
           onChange={(e) => setMarkdown(e.target.value)}
+          placeholder="Type your markdown here..."
         />
       </div>
 
@@ -28,8 +29,9 @@ export default function MarkdownEditor({ initialContent = "" }: EditorProps) {
         <div className="px-4 py-2 border-b border-zinc-800 bg-zinc-900/50 text-[10px] font-mono text-zinc-500 uppercase">
           Live Preview
         </div>
-        <div className="flex-1 overflow-auto p-8 prose prose-invert prose-sm max-w-none">
-          <ReactMarkdown>{markdown}</ReactMarkdown>
+        <div className="flex-1 overflow-auto p-8">
+          {/* Use the new View component which handles sanitization and GFM */}
+          <MarkdownView content={markdown} />
         </div>
       </div>
     </div>
