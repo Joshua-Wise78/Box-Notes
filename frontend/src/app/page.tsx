@@ -4,7 +4,7 @@ import Sidebar from '@/components/Sidebar';
 import FileTree from '@/components/FileTree';
 import EditorPane from '@/components/EditorPane';
 
-// Define the Note interface to match your FastAPI schemas.py
+// Interface matching your backend schemas.py
 export interface Note {
   id: string;
   title: string;
@@ -12,25 +12,25 @@ export interface Note {
   file_path: string;
   content?: string;
   mime_type?: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function Home() {
-  // Use the Note interface to avoid the 'any[]' mismatch error
+  // Fix: Explicitly type the state as Note[]
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
 
   useEffect(() => {
-    // Using the /api proxy defined in your next.config.mjs
+    // Fetch using the /api rewrite
     fetch('/api/notes/')
-      .then(res => res.json())
+      .then((res) => res.json())
       .then((data: Note[]) => {
         if (Array.isArray(data)) {
           setNotes(data);
         }
       })
-      .catch(err => console.error("Failed to fetch notes:", err));
+      .catch((err) => console.error("API Connection Error:", err));
   }, []);
 
   const handleSelectNote = async (id: string) => {
@@ -39,21 +39,20 @@ export default function Home() {
       const data: Note = await res.json();
       setSelectedNote(data);
     } catch (err) {
-      console.error("Error fetching note details:", err);
+      console.error("Failed to load note:", err);
     }
   };
 
   return (
     <div className="flex h-screen bg-[#121212] text-white overflow-hidden">
       <Sidebar />
-      {/* Passing the typed notes array to FileTree */}
       <FileTree notes={notes} onSelect={handleSelectNote} activeId={selectedNote?.id} />
       <main className="flex-1 flex flex-col overflow-hidden">
         {selectedNote ? (
           <EditorPane note={selectedNote} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-zinc-500 italic">
-            Select a note from your vault to start editing
+            Select a note to begin editing
           </div>
         )}
       </main>
