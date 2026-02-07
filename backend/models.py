@@ -39,6 +39,38 @@ class Notes(Base):
         back_populates="target_note",
         cascade="all, delete-orphan"
     )
+    attachments: Mapped[List["Attachment"]] = relationship(
+    "Attachment",
+    back_populates="attachments",
+    cascade="all, delete-orphan"
+)
 
 class Link(Base):
     __tablename__ = "links"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    source_note_id: Mapped[str] = mapped_column(String, ForeignKey("notes.id"), nullable=False)
+    target_note_id: Mapped[str] = mapped_column(String, ForeignKey("notes.id"), nullable=False)
+    link_type: Mapped[str | None] = mapped_column(String)
+
+    source_note: Mapped["Notes"] = relationship(
+        "Notes",
+        foreign_keys=[source_note_id],
+        back_populates="links_out"
+    )
+    target_note: Mapped["Notes"] = relationship(
+        "Notes",
+        foreign_keys=[target_note_id],
+        back_populates="links_in"
+    )
+
+class Attachment(Base):
+    __tablename__ = "attachments"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    note_id: Mapped[str | None] = mapped_column(String, ForeignKey("notes.id"))
+    file_name: Mapped[str] = mapped_column(String, nullable=False)
+    mime_type: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+
+    note: Mapped["Notes"] = relationship("Notes", back_populates="attachments")
