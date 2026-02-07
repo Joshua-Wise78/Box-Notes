@@ -13,20 +13,32 @@ export default function NotePage() {
 
   useEffect(() => {
     if (id) {
+      setLoading(true);
+
+      // Fetch the specific note
       fetch(`/api/notes/${id}`)
         .then((res) => {
           if (!res.ok) throw new Error("Note not found");
           return res.json();
         })
         .then((data) => setNote(data))
-        .catch((err) => console.error(err))
+        .catch((err) => {
+          console.error("Error fetching note:", err);
+          setNote(null);
+        })
         .finally(() => setLoading(false));
 
+      // Fetch ALL notes
       fetch(`/api/notes/`)
         .then((res) => res.json())
         .then((data) => {
-          if (Array.isArray(data)) setAllNotes(data);
-        });
+          if (Array.isArray(data)) {
+            setAllNotes(data);
+          } else {
+            console.error("Failed to load all notes list");
+          }
+        })
+        .catch(err => console.error("Error fetching all notes:", err));
     }
   }, [id]);
 
@@ -42,7 +54,9 @@ export default function NotePage() {
             allNotes={allNotes}
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-zinc-500">Note not found</div>
+          <div className="flex items-center justify-center h-full text-zinc-500">
+            Note not found
+          </div>
         )}
       </main>
     </div>

@@ -1,4 +1,4 @@
-"use client";
+"use client"; "use client";
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -19,9 +19,8 @@ export default function EditorPane({ note, allNotes = [] }: EditorPaneProps) {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    console.log(`Editor loaded. Available notes for linking: ${allNotes.length}`);
-    if (allNotes.length === 0) {
-      console.warn("Warning: allNotes is empty. Wiki links will not find destinations.");
+    if (allNotes.length > 0) {
+      console.log(`[EditorPane] Loaded ${allNotes.length} notes for linking.`);
     }
   }, [allNotes]);
 
@@ -47,22 +46,24 @@ export default function EditorPane({ note, allNotes = [] }: EditorPaneProps) {
     }
   };
 
-  const handleWikiClick = (title: string) => {
-    // Clean the title
-    const cleanTitle = decodeURIComponent(title.replace('wiki:', '')).replace(/-/g, ' ').toLowerCase().trim();
+  const handleWikiClick = (target: string) => {
+    // Clean the input
+    const raw = target.replace(/^wiki:/, '');
+    const cleanTarget = decodeURIComponent(raw).replace(/-/g, ' ').toLowerCase().trim();
 
-    console.log(`Clicking Link: "${title}" -> Searching for: "${cleanTitle}"`);
+    console.log(`[WikiClick] Raw: "${target}" -> Search: "${cleanTarget}"`);
 
-    const targetNote = allNotes.find(n =>
-      n.title.toLowerCase().trim() === cleanTitle
+    // Find the note
+    const match = allNotes.find(n =>
+      n.title.toLowerCase().trim() === cleanTarget
     );
 
-    if (targetNote) {
-      console.log("Found match:", targetNote.title);
-      router.push(`/notes/${targetNote.id}`);
+    if (match) {
+      console.log(`[WikiClick] Match found: ${match.id}`);
+      router.push(`/notes/${match.id}`);
     } else {
-      console.warn("Available Titles:", allNotes.map(n => n.title));
-      alert(`Note "${cleanTitle}" not found in your ${allNotes.length} notes.`);
+      console.warn(`[WikiClick] No match for "${cleanTarget}"`);
+      alert(`Note "${cleanTarget}" not found.`);
     }
   };
 
@@ -118,17 +119,27 @@ export default function EditorPane({ note, allNotes = [] }: EditorPaneProps) {
                 ]}
                 components={{
                   a: ({ node, href, children, ...props }) => {
-                    if (href?.startsWith('wiki:') || (href && !href.startsWith('http'))) {
+                    const childText = String(Array.isArray(children) ? children[0] : children);
+
+                    const isExternal = href?.startsWith('http://') || href?.startsWith('https://');
+
+                    if (!isExternal) {
                       return (
                         <span
-                          onClick={() => handleWikiClick(href as string)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            // Fallback: If href is missing, use the text content
+                            const target = href || childText;
+                            handleWikiClick(target);
+                          }}
                           className="text-blue-400 cursor-pointer hover:underline font-semibold"
-                          title={`Go to: ${children}`}
+                          title={`Go to: ${childText}`}
                         >
                           {children}
                         </span>
                       );
                     }
+
                     return <a href={href} {...props} target="_blank" rel="noopener noreferrer">{children}</a>;
                   }
                 }}

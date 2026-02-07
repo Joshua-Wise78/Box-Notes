@@ -46,7 +46,6 @@ export default function Home() {
     }
 
     try {
-      // Added trailing slash just in case backend expects it
       const res = await fetch(`/api/notes/${id}`);
 
       if (res.ok) {
