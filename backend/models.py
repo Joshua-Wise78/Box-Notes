@@ -41,7 +41,7 @@ class Notes(Base):
     )
     attachments: Mapped[List["Attachment"]] = relationship(
     "Attachment",
-    back_populates="attachments",
+    back_populates="note",
     cascade="all, delete-orphan"
 )
 
