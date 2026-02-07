@@ -1,19 +1,16 @@
-"use client";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
-import { useMemo } from 'react';
+interface MarkdownViewProps {
+  content: string;
+}
 
-export default function MarkdownView({ content }: { content: string }) {
-  const html = useMemo(() => {
-    const rawHtml = marked.parse(content, { gfm: true, breaks: true });
-    return DOMPurify.sanitize(rawHtml as string);
-  }, [content]);
-
+export default function MarkdownView({ content }: MarkdownViewProps) {
   return (
-    <div
-      className="prose prose-invert max-w-none"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div className="prose prose-slate dark:prose-invert max-w-none">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 }
