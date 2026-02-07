@@ -1,24 +1,39 @@
-export default function FileTree({ notes, onSelect, activeId }) {
-  // Group notes by vault
+"use client";
+import React from 'react';
+import { Note } from '@/app/page';
+
+interface FileTreeProps {
+  notes: Note[];
+  onSelect: (id: string) => void;
+  activeId?: string;
+}
+
+export default function FileTree({ notes, onSelect, activeId }: FileTreeProps) {
   const vaults = notes.reduce((acc, note) => {
-    (acc[note.vault_name] = acc[note.vault_name] || []).push(note);
+    const vName = note.vault_name || "Uncategorized";
+    if (!acc[vName]) acc[vName] = [];
+    acc[vName].push(note);
     return acc;
-  }, {});
+  }, {} as Record<string, Note[]>);
 
   return (
-    <div className="w-64 bg-[#181818] border-r border-gray-800 p-4 overflow-y-auto">
-      <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Vaults</h2>
+    <div className="w-64 bg-[#181818] border-r border-zinc-800 p-4 overflow-y-auto shrink-0">
+      <h2 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-6 text-center">Vaults</h2>
+
       {Object.entries(vaults).map(([vault, vaultNotes]) => (
-        <details key={vault} open className="mb-4">
-          <summary className="cursor-pointer text-sm font-semibold text-gray-300 hover:text-white">
+        <details key={vault} open className="mb-6 group">
+          <summary className="cursor-pointer text-xs font-bold text-zinc-300 hover:text-white list-none flex items-center gap-2">
+            <span className="group-open:rotate-90 transition-transform text-[8px]">▶</span>
             {vault}
           </summary>
-          <ul className="mt-2 space-y-1">
-            {vaultNotes.map(note => (
+          <ul className="mt-3 space-y-1 ml-3 border-l border-zinc-800">
+            {vaultNotes.map((note) => (
               <li
                 key={note.id}
                 onClick={() => onSelect(note.id)}
-                className={`text-sm py-1 px-2 rounded cursor-pointer truncate ${activeId === note.id ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800'
+                className={`text-xs py-2 px-3 rounded-r-md cursor-pointer truncate transition-all ${activeId === note.id
+                  ? 'bg-blue-600/20 text-blue-400 border-l-2 border-blue-500'
+                  : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
                   }`}
               >
                 {note.title}
