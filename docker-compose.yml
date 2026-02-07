@@ -18,6 +18,8 @@ services:
       POSTGRES_USER: box-user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: box-db
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -26,6 +28,8 @@ services:
     restart: on-failure
     container_name: box-backend
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
     volumes:
       - ./backend:/app
       - ./vaults:/data/vaults

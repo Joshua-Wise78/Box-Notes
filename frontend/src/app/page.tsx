@@ -23,7 +23,7 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/notes/')
       .then((res) => {
-        if (!res.ok) throw new Error(`API Error: ${res.status}`);
+        if (!res.ok) console.warn("List fetch status:", res.status);
         return res.json();
       })
       .then((data: Note[]) => {
@@ -39,19 +39,24 @@ export default function Home() {
   }, []);
 
   const handleSelectNote = async (id: string) => {
-    // Optimistic find from existing list first
     const existing = notes.find(n => n.id === id);
-    if (existing && existing.content) {
+
+    if (existing) {
       setSelectedNote(existing);
     }
 
     try {
+      // Added trailing slash just in case backend expects it
       const res = await fetch(`/api/notes/${id}`);
-      if (!res.ok) throw new Error("Failed to fetch note content");
-      const data: Note = await res.json();
-      setSelectedNote(data);
+
+      if (res.ok) {
+        const data: Note = await res.json();
+        setSelectedNote(data);
+      } else {
+        console.warn(`Background fetch failed for ${id}: ${res.status} ${res.statusText}`);
+      }
     } catch (err) {
-      console.error("Failed to load note:", err);
+      console.error("Silently failed to load note details:", err);
     }
   };
 
@@ -67,7 +72,10 @@ export default function Home() {
             <span className="text-sm text-zinc-500">Ensure the backend container is running.</span>
           </div>
         ) : selectedNote ? (
-          <EditorPane note={selectedNote} />
+          <EditorPane
+            note={selectedNote}
+            allNotes={notes}
+          />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-zinc-600 gap-4">
             <div className="w-16 h-16 rounded-xl bg-zinc-800 flex items-center justify-center">

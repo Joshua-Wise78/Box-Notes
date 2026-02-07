@@ -3,10 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 import models, schemas, database
 
-router = APIRouter(
-    prefix="/notes",
-    tags=["notes"]
-)
+router = APIRouter()
 
 @router.get("/", response_model=List[schemas.Note])
 def read_notes(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
@@ -34,6 +31,13 @@ def update_note(note_id: str, note_update: schemas.NoteUpdate, db: Session = Dep
     db.commit()
     db.refresh(db_note)
     return db_note
+
+@router.get("/{note_id}", response_model=schemas.Note)
+def read_note(note_id: str, db: Session = Depends(database.get_db)):
+    note = db.query(models.Note).filter(models.Note.id == note_id).first()
+    if note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return note
 
 @router.delete("/{note_id}")
 def delete_note(note_id: str, db: Session = Depends(database.get_db)):

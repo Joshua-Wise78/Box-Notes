@@ -2,10 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import models, schemas, database
 
-router = APIRouter(
-    prefix="/links",
-    tags=["links"]
-)
+router = APIRouter()
 
 @router.post("/", response_model=schemas.Link)
 def create_link(link: schemas.LinkCreate, db: Session = Depends(database.get_db)):

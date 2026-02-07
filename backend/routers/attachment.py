@@ -4,10 +4,7 @@ from sqlalchemy.orm import Session
 import models, database
 import uuid
 
-router = APIRouter(
-    prefix="/attachments",
-    tags=["attachments"]
-)
+router = APIRouter()
 
 @router.post("/{note_id}")
 async def upload_attachment(
