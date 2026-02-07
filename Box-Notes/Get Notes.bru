@@ -1,0 +1,26 @@
+meta {
+  name: Get Notes
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/notes
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "My First Note",
+    "vault_name": "Personal",
+    "file_path": "/Personal/My First Note.md",
+    "content": "# Hello World\nThis is the content of my first note.",
+    "mime_type": "text/markdown"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

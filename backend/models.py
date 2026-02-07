@@ -1,14 +1,20 @@
 from sqlalchemy import Column, Integer, LargeBinary, String, Boolean, ForeignKey, Text, func, TIMESTAMP, DateTime
-from sqlalchemy.orm import Relationship, DeclarativeBase, Mapped, mapped_column, relationship
-from datetime import datetime, date
+from sqlalchemy.orm import Relationship, DeclarativeBase, Mapped, mapped_column, relationship, registry
+from datetime import datetime
 from typing import List
 import uuid
+
+mapper_registry = registry()
 
 class Base(DeclarativeBase):
     pass
 
-class Notes(Base):
+class Note(Base):
     __tablename__ = "notes"
+
+    __mapper_args__ = {
+        "polymorphic_identity": "notes_internal",
+    }
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     vault_name: Mapped[str] = mapped_column(String, index=True, nullable=False)
@@ -40,10 +46,10 @@ class Notes(Base):
         cascade="all, delete-orphan"
     )
     attachments: Mapped[List["Attachment"]] = relationship(
-    "Attachment",
-    back_populates="attachments",
-    cascade="all, delete-orphan"
-)
+        "Attachment",
+        back_populates="note",
+        cascade="all, delete-orphan"
+    )
 
 class Link(Base):
     __tablename__ = "links"
@@ -53,13 +59,13 @@ class Link(Base):
     target_note_id: Mapped[str] = mapped_column(String, ForeignKey("notes.id"), nullable=False)
     link_type: Mapped[str | None] = mapped_column(String)
 
-    source_note: Mapped["Notes"] = relationship(
-        "Notes",
+    source_note: Mapped["Note"] = relationship(
+        "Note",
         foreign_keys=[source_note_id],
         back_populates="links_out"
     )
-    target_note: Mapped["Notes"] = relationship(
-        "Notes",
+    target_note: Mapped["Note"] = relationship(
+        "Note",
         foreign_keys=[target_note_id],
         back_populates="links_in"
     )
@@ -73,4 +79,4 @@ class Attachment(Base):
     mime_type: Mapped[str] = mapped_column(String, nullable=False)
     data: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
 
-    note: Mapped["Notes"] = relationship("Notes", back_populates="attachments")
+    note: Mapped["Note"] = relationship("Note", back_populates="attachments")
