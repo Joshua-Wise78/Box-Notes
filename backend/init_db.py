@@ -17,7 +17,7 @@ def run_init():
         engine = create_engine(DATABASE_URL)
         
         # Create all tables defined in models.py
-        Base.metadata.create_all(bind=engine)
+        Base.metadata.create_all(bind=engine, checkfirst=True)
         
         print("Successfully generated database tables!")
     except Exception as e:

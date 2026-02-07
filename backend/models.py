@@ -57,7 +57,7 @@ class Link(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     source_note_id: Mapped[str] = mapped_column(String, ForeignKey("notes.id"), nullable=False)
     target_note_id: Mapped[str] = mapped_column(String, ForeignKey("notes.id"), nullable=False)
-    link_type: Mapped[str | None] = mapped_column(String)
+    link_type: Mapped[str] = mapped_column(String, nullable=False, default="wikilink")
 
     source_note: Mapped["Note"] = relationship(
         "Note",

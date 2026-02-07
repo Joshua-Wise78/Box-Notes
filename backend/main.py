@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import notes, links
+from routers import notes, links, attachment
 import os
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -15,6 +15,7 @@ app.add_middleware(
 
 app.include_router(notes.router)
 app.include_router(links.router)
+app.include_router(attachment.router)
 
 @app.get("/")
 def read_root():

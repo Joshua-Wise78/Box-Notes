@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from .. import models, schemas, database
+import models, schemas, database
 
 router = APIRouter(
     prefix="/notes",
@@ -44,4 +44,25 @@ def delete_note(note_id: str, db: Session = Depends(database.get_db)):
     db.delete(db_note)
     db.commit()
     return {"Message": "Note has been deleted"}
+
+@router.get("/graph", response_model=schemas.GraphData)
+def get_graph_data(db: Session = Depends(database.get_db)):
+    all_notes = db.query(models.Note).all()
+    all_links = db.query(models.Link).all()
+
+    nodes = [
+        schemas.GraphNode(id=n.id, title=n.title, vault_name=n.vault_name)
+        for n in all_notes
+    ]
+
+    links = [
+        schemas.GraphEdge(
+            id=l.id,
+            source=l.source_note_id,
+            target=l.target_note_id,
+            link_type=l.link_type
+        ) for l in all_links
+    ]
+
+    return schemas.GraphData(nodes=nodes, links=links)
 
