@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
   db:
     image: postgres:15-alpine
     restart: always
@@ -15,13 +25,14 @@ services:
 
   backend:
     build: ./backend
+    restart: on-failure
     container_name: box-backend
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
     volumes:
       - ./backend:/app
       - ./vaults:/data/vaults
-    ports:
-      - "8000:8000"
     depends_on:
       - db
     environment:
@@ -31,13 +42,11 @@ services:
   frontend:
     build: ./frontend
     container_name: box-frontend
-    ports:
-      - "3000:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=/api
     depends_on:
       - backend
 

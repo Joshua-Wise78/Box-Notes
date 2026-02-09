@@ -1,44 +1,47 @@
 "use client";
-import { useState } from 'react';
-import { Folder, FileText, ChevronRight, ChevronDown } from 'lucide-react';
+import React from 'react';
+import { Note } from '@/app/page';
 
-interface FileNode {
-  name: string;
-  type: 'file' | 'directory';
-  children?: FileNode[];
+interface FileTreeProps {
+  notes: Note[];
+  onSelect: (id: string) => void;
+  activeId?: string;
 }
 
-export default function FileTree({ node }: { node: FileNode }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  if (node.type === 'file') {
-    return (
-      <div className="flex items-center gap-2 px-4 py-1.5 hover:bg-zinc-800/50 cursor-pointer text-zinc-400 group transition-colors">
-        <FileText size={14} className="group-hover:text-zinc-300" />
-        <span className="text-sm truncate">{node.name}</span>
-      </div>
-    );
-  }
+export default function FileTree({ notes, onSelect, activeId }: FileTreeProps) {
+  // Grouping notes by vault
+  const vaults = notes.reduce((acc, note) => {
+    const vName = note.vault_name || "Default";
+    if (!acc[vName]) acc[vName] = [];
+    acc[vName].push(note);
+    return acc;
+  }, {} as Record<string, Note[]>);
 
   return (
-    <div className="select-none">
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-2 py-1.5 hover:bg-zinc-800/50 cursor-pointer text-zinc-300 transition-colors"
-      >
-        <span className="text-zinc-500">
-          {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        </span>
-        <Folder size={14} className={isOpen ? 'text-blue-400' : 'text-zinc-500'} />
-        <span className="text-sm font-medium truncate">{node.name}</span>
-      </div>
-      {isOpen && node.children && (
-        <div className="ml-4 border-l border-zinc-800/60 pl-1">
-          {node.children.map((child) => (
-            <FileTree key={child.name} node={child} />
-          ))}
-        </div>
-      )}
+    <div className="w-64 bg-[#181818] border-r border-zinc-800 p-4 overflow-y-auto shrink-0">
+      <h2 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-6">Vaults</h2>
+      {Object.entries(vaults).map(([vault, vaultNotes]) => (
+        <details key={vault} open className="mb-4 group">
+          <summary className="cursor-pointer text-xs font-bold text-zinc-300 hover:text-white select-none list-none flex items-center gap-2">
+            <span className="group-open:rotate-90 transition-transform text-[8px]">▶</span>
+            {vault}
+          </summary>
+          <ul className="mt-2 ml-3 space-y-1 border-l border-zinc-800">
+            {vaultNotes.map((note) => (
+              <li
+                key={note.id}
+                onClick={() => onSelect(note.id)}
+                className={`text-xs py-2 px-3 rounded-r-md cursor-pointer truncate transition-all ${activeId === note.id
+                    ? 'bg-blue-600/20 text-blue-400 border-l-2 border-blue-500'
+                    : 'text-zinc-400 hover:bg-zinc-800'
+                  }`}
+              >
+                {note.title}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ))}
     </div>
   );
 }

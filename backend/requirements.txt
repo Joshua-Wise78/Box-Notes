@@ -5,3 +5,5 @@ psycopg2-binary
 watchdog
 python-frontmatter
 networkx
+faker
+python-multipart

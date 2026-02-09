@@ -1,0 +1,31 @@
+meta {
+  name: Create Notes
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/notes
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Dijkstra's Algorithm",
+    "vault_name": "Computer Science",
+    "file_path": "/cs/dijkstra.md",
+    "content": "A famous algorithm for finding the shortest path.",
+    "mime_type": "text/markdown"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  bru.setVar("noteB_id", data.id);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
