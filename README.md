@@ -7,4 +7,5 @@ The replacement for Obsian.. and its open-source
 Room: Joshi367
 
 - Joshua Wise
+  - Joshua.Wise722@gmail.com
 - Cameron White
