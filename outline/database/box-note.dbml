@@ -1,0 +1,48 @@
+// Joshua Wise
+// Apr 21 2026
+
+// Vault for storage of md files with basics for id, name and description
+Table vault {
+  id integer [primary key]
+  name varchar
+  description text
+  created_at timestamp
+}
+
+// Mounting point for a vault to support vfs and lfs systems
+// Having some vault id to some id of a mount allows up to dynamically
+// save and load files through the backend type and the paths
+Table mount_point {
+  id integer [primary key]
+  vault_id integer [ref: > vault.id]
+  backend_type varchar // 'vfs' or 'lfs'
+  backup_path varchar
+  sync_enbaled boolean
+  last_backup_at timestamp
+}
+
+// note the markdown file that has some uuid attached, to allow references
+// to be able to be moved to various locations without breaking
+// symbolic links as the links are pathed by unique identifiers rather
+// than some id of a path
+Table note {
+  id uuid [primary key]
+  vault_id integer [ref: > vault.id]
+  title varchar
+  slug varchar // unique readable URL
+  body text
+  content_hash varchar // hash for procedual backup to a lfs
+  is_archived boolean
+  updated_at timestamp
+}
+
+// Sybmolic links to get the nice graphically connection between
+// note to note using uuids this will allow direct connection
+// linkage to notes while still being able to update names/locations
+Table symbolic_link {
+  id integer [primary key]
+  source_note_id uuid [ref: > note.id]
+  target_note_id uuid [ref: > note.id]
+  label varchar
+  created_at timestamp
+}
