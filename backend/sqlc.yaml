@@ -1,11 +1,9 @@
 version: "2"
-cloud:
-    organization: ""
-    project: ""
-    hostname: ""
-sql: []
-overrides:
-    go: null
-plugins: []
-rules: []
-options: {}
+sql:
+    - schema: "sql/migrations/"
+      queries: "sql/queries.sql"
+      engine: "sqlite"
+      gen:
+          go:
+              package: "db"
+              out: "internal/db"
